@@ -10,32 +10,14 @@ name: Version NPM package
 #    branches: [ master ]
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [closed]
     branches: [ master ]
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-          
-      - name: Install dependencies
-        run: npm ci
-      #- name: Lint code
-      #  run: npm run lint
-      #- name: Build code
-      #  run: npm run build
-      #- name: Run tests
-      #  run: npm test
 
   version:
     name: "Release if we have a version label"
-    needs: [ci]
-    if: ${{ needs.ci.result == 'success' && github.event.pull_request.merged }}
+    if: ${{ github.event.pull_request.merged }}
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
@@ -73,19 +55,20 @@ jobs:
     
     - name: Temporarily disable "include administrators" branch protection
       uses: benjefferies/branch-protection-bot@master
-      if: always()
+      if: ${{ steps.version-label.outputs.level != null }}
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
+        enforce_admins: false
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         ref: refs/heads/master
-      if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
+      if: ${{ steps.version-label.outputs.level != null }}
       
     - uses: actions/setup-node@v1
       with:
         node-version: 12
-      if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
+      if: ${{ steps.version-label.outputs.level != null }}
     
     #- run: npm ci
     #  if: ${{ steps.version-label.outputs.level != null }}
@@ -105,8 +88,8 @@ jobs:
         echo "$GITHUB_ACTOR@users.noreply.github.com"
         npm version ${{ steps.version-label.outputs.level }} -m "Bump version to %s" --force --verbose
         git remote add gh-origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-        git push gh-origin +HEAD:master --tags --force
-      if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
+        git push gh-origin +HEAD:master --tags
+      if: ${{ steps.version-label.outputs.level != null }}
       env:
         GITHUB_TOKEN: ${{ secrets.ADMIN_PAT }}
    
@@ -115,8 +98,7 @@ jobs:
       if: always()  # Force to always run this step to ensure "include administrators" is always turned back on
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
-        owner: FlipABit
-        repo: node-plex-api
+        enforce_admins: true
    
     #- name: NPM Version #testtestfjhtestydouhuyguyf1`e1`eoiioh
     #  if: ${{ steps.version-label.outputs.level != null }}
