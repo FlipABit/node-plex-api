@@ -58,7 +58,7 @@ jobs:
         git push gh-origin +HEAD:master --tags --force
       if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.MY_PAT }}
    
     #- name: NPM Version #testtestfjhtestyd
     #  if: ${{ steps.version-label.outputs.level != null }}
