@@ -34,7 +34,8 @@ jobs:
       if: always()
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
-
+        enforce_admins: false
+        
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
@@ -63,4 +64,4 @@ jobs:
       if: always()  # Force to always run this step to ensure "include administrators" is always turned back on
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
-   
+        enforce_admins: true   
