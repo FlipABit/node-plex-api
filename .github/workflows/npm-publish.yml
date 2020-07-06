@@ -31,7 +31,7 @@ jobs:
     
     - name: Temporarily disable "include administrators" branch protection
       uses: benjefferies/branch-protection-bot@master
-      if: always()
+      if: ${{ steps.version-label.outputs.level != null && success() }}
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
         enforce_admins: false
@@ -61,7 +61,7 @@ jobs:
    
     - name: Enable "include administrators" branch protection
       uses: benjefferies/branch-protection-bot@master
-      if: always()  # Force to always run this step to ensure "include administrators" is always turned back on
+      if: ${{ steps.version-label.outputs.level != null && (cancelled() || failure() || success()) }}  # Force to always run this step to ensure "include administrators" is always turned back on
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
         enforce_admins: true   
