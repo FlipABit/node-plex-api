@@ -35,7 +35,7 @@ jobs:
   version:
     name: "Release if we have a version label"
     needs: [ci]
-    if: ${{ needs.ci.result == 'success' && github.event.pull_request.merged && github.event.pull_request.action == 'closed' }}
+    if: ${{ needs.ci.result == 'success' && github.event.pull_request.merged }}
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
