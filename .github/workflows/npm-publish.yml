@@ -10,7 +10,7 @@ name: Version NPM package
 #    branches: [ master ]
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [closed]
     branches: [ master ]
 
 jobs:
@@ -21,31 +21,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-    - name: Dump job context
-      env:
-        JOB_CONTEXT: ${{ toJson(job) }}
-      run: echo "$JOB_CONTEXT"
-    - name: Dump steps context
-      env:
-        STEPS_CONTEXT: ${{ toJson(steps) }}
-      run: echo "$STEPS_CONTEXT"
-    - name: Dump runner context
-      env:
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: echo "$RUNNER_CONTEXT"
-    - name: Dump strategy context
-      env:
-        STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-      run: echo "$STRATEGY_CONTEXT"
-    - name: Dump matrix context
-      env:
-        MATRIX_CONTEXT: ${{ toJson(matrix) }}
-      run: echo "$MATRIX_CONTEXT"
-      
+
     - name: Get Version Label
       uses: actions-ecosystem/action-release-label@v1.2.0
       id: version-label
@@ -62,22 +38,12 @@ jobs:
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
-      if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
+      if: ${{ steps.version-label.outputs.level != null }}
       
     - uses: actions/setup-node@v1
       with:
         node-version: 12
-      if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
-    
-    #- run: npm ci
-    #  if: ${{ steps.version-label.outputs.level != null }}
-  
-    #- run: npm build
-    #  if: ${{ steps.version-label.outputs.level != null }}
-    
-    #- run: npm build:sproc
-    #  if: ${{ steps.version-label.outputs.level != null }}
-
+      if: ${{ steps.version-label.outputs.level != null }}
  
     - name: Bump NPM version and push
       id: bump-and-push
@@ -88,7 +54,7 @@ jobs:
         npm version ${{ steps.version-label.outputs.level }} -m "Bump version to %s" --force --verbose
         git remote add gh-origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
         git push gh-origin +HEAD:master --tags
-      if: ${{ github.event.pull_request.merged && steps.version-label.outputs.level != null }}
+      if: ${{ steps.version-label.outputs.level != null }}
       env:
         GITHUB_TOKEN: ${{ secrets.ADMIN_PAT }}
    
@@ -97,12 +63,4 @@ jobs:
       if: always()  # Force to always run this step to ensure "include administrators" is always turned back on
       with:
         access-token: ${{ secrets.ADMIN_PAT }}
-        owner: FlipABit
-        repo: node-plex-api
    
-    #- name: NPM Version #testtestfjhtestydouhuyguyf1`e1`eoiioh
-    #  if: ${{ steps.version-label.outputs.level != null }}
-    #  
-    #  run: |
-    #    echo "::error PR's to master with a 'version-*' label require a 'release' label"##
-    #    exit 1
